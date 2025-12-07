@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reparto GPS - La Tablita</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="diseño.css">
+</head>
+<body>
+
+    <h1>Ruta de Reparto - En Vivo</h1>
+
+    <div class="contenedor-app">
+        
+        <div class="sidebar">
+            
+            <div class="seccion-gps">
+                <h3>🛰️ Modo Conductor</h3>
+                <button onclick="activarGPS()" id="btnGPS" class="btn-gps-inactivo">
+                    ▶ ACTIVAR SEGUIMIENTO
+                </button>
+                <p class="estado-gps" id="estadoGPS">GPS Apagado</p>
+            </div>
+
+            <hr>
+
+            <h3>📍 Cargar Nuevo Cliente</h3>
+            <div class="form-group">
+                <input type="text" id="nombreCliente" placeholder="Nombre (Ej: Kiosco Nuevo)">
+                <p class="instruccion">👆 1. Escribí el nombre.<br>👇 2. Tocá en el mapa para guardar.</p>
+            </div>
+
+            <hr>
+
+            <h3>👤 Buscar en Agenda</h3>
+            <p id="contadorAgenda" style="font-size:12px; color:#666; margin-bottom:5px;">Cargando agenda...</p>
+            
+            <div class="buscador-container">
+                <input type="text" id="inputBuscador" placeholder="🔍 Toca aquí para ver lista..." onkeyup="buscarPersona()" onfocus="buscarPersona()">
+                <ul id="listaResultados"></ul>
+            </div>
+
+            <hr>
+
+            <h3>🚚 Hoja de Ruta</h3>
+            <ul id="listaClientesHTML"></ul>
+
+            <button onclick="borrarMemoria()" class="btn-rojo">
+                🗑️ BORRAR RUTA DE HOY
+            </button>
+
+            <div class="panel-info">
+                <p>Distancia Total:</p>
+                <h2 id="textoDistancia">0.00 km</h2>
+            </div>
+        </div>
+
+        <div id="miMapa"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <script src="logica.js"></script>
+
+</body>
+</html>
