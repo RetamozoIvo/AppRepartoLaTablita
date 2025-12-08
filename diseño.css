@@ -1,12 +1,16 @@
-/* GENERAL */
+/* =========================================
+   1. ESTILOS GENERALES
+   ========================================= */
 body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 20px;
-    background-image: url('fondolt.jpg'); /* Tu fondo */
+    background-image: url('fondolt.jpg');
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
+    background-repeat: no-repeat;
+    overflow-x: hidden; /* Evita scroll lateral */
 }
 
 h1 {
@@ -16,112 +20,195 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* LAYOUT */
+/* =========================================
+   2. ESTRUCTURA (PANEL Y MAPA)
+   ========================================= */
 .contenedor-app {
     display: flex;
     gap: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    height: 80vh; /* Altura de la pantalla */
+    height: 85vh; /* Altura fija para que no se estire de más */
 }
 
-/* PANEL LATERAL */
 .sidebar {
     width: 350px;
     background: rgba(255, 255, 255, 0.95);
-    padding: 20px;
-    border-radius: 10px;
-    overflow-y: auto; /* Scroll si es muy largo */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    overflow-y: auto; /* Scroll si la lista es larga */
+    display: flex;
+    flex-direction: column;
 }
 
-/* EL MAPA */
 #miMapa {
-    flex-grow: 1; /* Ocupa todo el espacio sobrante */
-    border-radius: 10px;
+    flex-grow: 1; /* Ocupa todo el espacio libre */
+    border-radius: 12px;
     border: 4px solid white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    min-height: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    height: 100%;
+    z-index: 1;
 }
 
-/* CONTROLES */
-h3 { margin-top: 0; color: #333; font-size: 16px; border-bottom: 2px solid #004AAD; padding-bottom: 5px; display: inline-block;}
+/* =========================================
+   3. BOTONES Y CONTROLES
+   ========================================= */
+h3 {
+    margin: 10px 0 5px 0;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 2px solid #004AAD;
+    display: inline-block;
+}
+
 hr { border: 0; border-top: 1px solid #ddd; margin: 15px 0; }
-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
-/* LISTAS */
-ul { list-style: none; padding: 0; }
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* Botón VERDE de Empezar */
+.btn-empezar {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to right, #2e7d32, #43a047);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    animation: palpitar 2s infinite; /* Efecto latido */
+}
+.btn-empezar:active { transform: scale(0.98); }
+
+/* Animación de latido */
+@keyframes palpitar {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.btn-rojo {
+    width: 100%; padding: 10px; background: #d32f2f; color: white;
+    border: none; border-radius: 6px; margin-top: 10px; cursor: pointer;
+}
+
+.btn-gps-chico {
+    width: 100%; padding: 8px; background: #555; color: white;
+    border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
+}
+
+/* =========================================
+   4. LISTAS Y BUSCADOR
+   ========================================= */
+ul { list-style: none; padding: 0; margin: 0; }
+
 .item-cliente {
-    background: white; border-bottom: 1px solid #eee; padding: 8px;
-    display: flex; justify-content: space-between; align-items: center;
+    background: white;
+    border-bottom: 1px solid #eee;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-.btn-borrar { background: #ffebee; color: red; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; }
 
-/* BOTÓN GPS (NUEVO) 🛰️ */
-.seccion-gps { background: #e3f2fd; padding: 10px; border-radius: 8px; text-align: center; }
-.btn-gps-inactivo {
-    width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer;
-    background: #555; color: white; font-weight: bold; transition: 0.3s;
-}
-.btn-gps-activo {
-    width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer;
-    background: #00c853; color: white; font-weight: bold; animation: palpitar 2s infinite;
-}
-@keyframes palpitar { 0% {opacity: 1;} 50% {opacity: 0.8;} 100% {opacity: 1;} }
-.estado-gps { font-size: 12px; margin: 5px 0 0 0; color: #666; }
-
-/* OTROS BOTONES */
-.btn-rojo { width: 100%; padding: 10px; background: #d32f2f; color: white; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer; }
-.panel-info { margin-top: 20px; background: #004AAD; color: white; padding: 15px; border-radius: 8px; text-align: center; }
-#textoDistancia { margin: 5px 0 0 0; font-size: 24px; }
-
-/* RESULTADOS BÚSQUEDA */
-#listaResultados { max-height: 150px; overflow-y: auto; display: none; border: 1px solid #ddd; margin-top: 5px; }
-#listaResultados li { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; background: white; }
-#listaResultados li:hover { background: #f1f1f1; }
-
-/* CELULAR */
-@media (max-width: 768px) {
-    .contenedor-app { flex-direction: column; height: auto; }
-    .sidebar { width: 100%; box-sizing: border-box; }
-    #miMapa { height: 500px; }
-}
-/* --- ESTILOS DEL BUSCADOR (Agregalo al final) --- */
-
-.buscador-container {
-    position: relative; /* Para que la lista flote pegada a esto */
-}
+.buscador-container { position: relative; }
 
 #listaResultados {
-    display: none; /* Oculto por defecto */
-    position: absolute; /* Flota encima de lo demás */
+    display: none;
+    position: absolute;
     width: 100%;
     max-height: 200px;
     overflow-y: auto;
-    background: white; /* Fondo blanco IMPORTANTE */
+    background: white;
     border: 1px solid #004AAD;
     border-radius: 0 0 8px 8px;
-    z-index: 1000; /* Asegura que se vea encima de todo */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    margin-top: 0;
+    z-index: 999; /* Encima de todo */
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
-#listaResultados li {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    color: #333;
-    display: flex;
-    justify-content: space-between;
+#listaResultados li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+#listaResultados li:hover { background-color: #e3f2fd; }
+
+.panel-info {
+    margin-top: auto; /* Se pega al fondo */
+    background: #004AAD; color: white;
+    padding: 15px; border-radius: 8px; text-align: center;
 }
 
-#listaResultados li:hover {
-    background-color: #e3f2fd; /* Azulcito al pasar el mouse */
-}
+/* =========================================
+   5. 🚀 MODO VIAJE (PANTALLA COMPLETA)
+   ========================================= */
 
-/* El contador chiquito */
-#contadorAgenda {
+/* Botón flotante para SALIR (Invisible al principio) */
+#btnSalirNav {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    padding: 12px 25px;
+    background: #d32f2f;
+    color: white;
     font-weight: bold;
-    color: #004AAD;
-    margin-left: 5px;
+    border: 3px solid white;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Cuando activamos el modo viaje en el BODY... */
+body.modo-viaje {
+    padding: 0;
+    margin: 0;
+    overflow: hidden; /* Prohibido scroll */
+}
+
+/* Ocultamos todo lo que molesta */
+body.modo-viaje h1, 
+body.modo-viaje .sidebar {
+    display: none !important;
+}
+
+/* El mapa se vuelve gigante */
+body.modo-viaje .contenedor-app {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    margin: 0;
+}
+
+body.modo-viaje #miMapa {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    border-radius: 0;
+    position: fixed; /* Se pega a la pantalla */
+    top: 0;
+    left: 0;
+    z-index: 5000;
+}
+
+/* Mostramos el botón de salir */
+body.modo-viaje #btnSalirNav {
+    display: block;
+}
+
+/* =========================================
+   6. RESPONSIVE (CELULARES)
+   ========================================= */
+@media (max-width: 768px) {
+    .contenedor-app { flex-direction: column; height: auto; }
+    .sidebar { width: 100%; order: 2; } /* Panel abajo */
+    #miMapa { height: 400px; order: 1; } /* Mapa arriba */
+    h1 { font-size: 24px; }
 }

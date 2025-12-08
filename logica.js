@@ -6,6 +6,38 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // ======================================================
+// 🚀 NUEVO: MODO VIAJE (Pantalla Completa)
+// ======================================================
+var modoViajeActivo = false;
+
+window.toggleModoViaje = function() {
+    var body = document.body;
+    
+    if (!modoViajeActivo) {
+        // --- ACTIVAR MODO VIAJE ---
+        body.classList.add("modo-viaje");
+        modoViajeActivo = true;
+        
+        // Ajustamos el mapa al nuevo tamaño (IMPORTANTE)
+        setTimeout(function(){ map.invalidateSize(); }, 300);
+
+        // Prendemos el GPS automáticamente
+        if (!watchID) activarGPS();
+
+        alert("🛣️ Iniciando recorrido. ¡Buen viaje!");
+
+    } else {
+        // --- SALIR MODO VIAJE ---
+        body.classList.remove("modo-viaje");
+        modoViajeActivo = false;
+        
+        // Ajustamos mapa de nuevo
+        setTimeout(function(){ map.invalidateSize(); }, 300);
+    }
+}
+
+
+// ======================================================
 // 2. GESTIÓN DE DATOS
 // ======================================================
 var rutaKey = "rutaTablita_v3";
@@ -19,7 +51,7 @@ var agenda = datosAgenda ? JSON.parse(datosAgenda) : [];
 
 function actualizarContador() {
     var contador = document.getElementById("contadorAgenda");
-    if(contador) contador.innerText = "Hay " + agenda.length + " clientes guardados.";
+    if(contador) contador.innerText = "Agenda: " + agenda.length + " lugares guardados.";
 }
 actualizarContador();
 
@@ -36,43 +68,29 @@ var watchID = null;
 var miMarcador = null;
 
 // ======================================================
-// 🧠 EL CEREBRO: OPTIMIZADOR REAL
+// 🧠 OPTIMIZADOR
 // ======================================================
-// Esta función ordena el Array 'clientes' para que la lista visual coincida con la ruta óptima
 function optimizarOrdenClientes() {
-    if (clientes.length < 3) return; // Si hay 2 puntos, no hay nada que ordenar
-
-    var ordenados = [clientes[0]]; // El depósito siempre es el primero
-    var pendientes = clientes.slice(1); // El resto
+    if (clientes.length < 3) return;
+    var ordenados = [clientes[0]];
+    var pendientes = clientes.slice(1);
     var actual = clientes[0];
 
     while (pendientes.length > 0) {
-        var masCerca = null;
-        var distMin = Infinity;
-        var idx = -1;
-
-        // Buscamos quién está más cerca del ÚLTIMO visitado
+        var masCerca = null, distMin = Infinity, idx = -1;
         for (var i = 0; i < pendientes.length; i++) {
             var d = map.distance(actual.coords, pendientes[i].coords);
-            if (d < distMin) {
-                distMin = d;
-                masCerca = pendientes[i];
-                idx = i;
-            }
+            if (d < distMin) { distMin = d; masCerca = pendientes[i]; idx = i; }
         }
-        
-        // Lo agregamos a la nueva lista ordenada
         ordenados.push(masCerca);
-        actual = masCerca; // Ahora nos paramos en este cliente
-        pendientes.splice(idx, 1); // Lo tachamos de pendientes
+        actual = masCerca;
+        pendientes.splice(idx, 1);
     }
-
-    // Reemplazamos la lista desordenada por la inteligente
     clientes = ordenados;
 }
 
 // ======================================================
-// 🔍 BUSCADOR INTERNO
+// 🔍 BUSCADOR
 // ======================================================
 window.buscarPersona = function() {
     var input = document.getElementById("inputBuscador");
@@ -81,10 +99,8 @@ window.buscarPersona = function() {
     lista.innerHTML = ""; lista.style.display = "block";
 
     if (agenda.length === 0) {
-        lista.innerHTML = "<li style='padding:10px; color:#999;'>📭 Agenda vacía.</li>";
-        return;
+        lista.innerHTML = "<li style='padding:10px; color:#999;'>📭 Agenda vacía.</li>"; return;
     }
-
     var coincidencias = filtro === "" ? agenda : agenda.filter(p => p.nombre.toLowerCase().includes(filtro));
 
     if (coincidencias.length > 0) {
@@ -100,132 +116,93 @@ window.buscarPersona = function() {
 }
 
 function agregarDesdeBuscador(persona) {
-    // Verificar si ya está (opcional, por ahora lo dejamos agregar)
     clientes.push(persona);
     document.getElementById("inputBuscador").value = "";
     document.getElementById("listaResultados").style.display = "none";
-    
-    actualizarMapaYLista(); // Acá adentro se va a optimizar solo
-    alert("✅ " + persona.nombre + " agregado y ruta re-calculada.");
+    actualizarMapaYLista();
 }
 
 // ======================================================
-// 🗺️ VISUALIZACIÓN INTELIGENTE
+// 🗺️ VISUALIZACIÓN
 // ======================================================
 function actualizarMapaYLista() {
-    // 1. PRIMERO OPTIMIZAMOS EL ORDEN 🧠
-    optimizarOrdenClientes();
-    guardarTodo(); // Guardamos el nuevo orden
+    optimizarOrdenClientes(); // 🧠 Ordenamos siempre
+    guardarTodo();
 
-    // 2. Limpiamos visuales
     marcadoresEnMapa.forEach(p => map.removeLayer(p));
     marcadoresEnMapa = [];
     var ul = document.getElementById("listaClientesHTML");
     ul.innerHTML = "";
 
-    // 3. Dibujamos la lista (¡Ahora ya sale ordenada!)
     clientes.forEach((c, i) => {
-        // --- MAPA ---
+        // MAPA
         var pin = L.marker(c.coords).addTo(map);
-        var linkGoogle = `https://www.google.com/maps/dir/?api=1&destination=${c.coords[0]},${c.coords[1]}&travelmode=driving`;
+        var linkGoogle = `http://googleusercontent.com/maps.google.com/?q=${c.coords[0]},${c.coords[1]}&travelmode=driving`;
         
-        var contenidoPopup = i === 0 ? "<b>🏭 Depósito Central</b>" : `
-            <b>${i}. ${c.nombre}</b><br>
-            <hr style="margin:5px 0;">
-            <a href="${linkGoogle}" target="_blank" style="display:block;background:#25D366;color:white;text-decoration:none;padding:5px;text-align:center;border-radius:4px;">🚗 Ir con Google</a>
-            <button onclick="eliminarDeRuta(${i})" style="margin-top:5px;background:#ff4444;color:white;border:none;padding:5px;width:100%;border-radius:4px;">Quitar</button>
+        var contenidoPopup = i === 0 ? "<b>🏭 Depósito</b>" : `
+            <b>${i}. ${c.nombre}</b><br><hr style='margin:5px 0'>
+            <a href="${linkGoogle}" target="_blank" style="display:block;background:#25D366;color:white;padding:5px;text-align:center;border-radius:4px;text-decoration:none;">🚗 Ir con Google</a>
+            <button onclick="eliminarDeRuta(${i})" style="margin-top:5px;background:#ff4444;color:white;border:none;padding:5px;width:100%;border-radius:4px;">🗑️ Quitar</button>
         `;
         pin.bindPopup(contenidoPopup);
         marcadoresEnMapa.push(pin);
 
-        // --- LISTA ---
+        // LISTA
         var li = document.createElement("li");
         li.className = "item-cliente";
-        
-        var btnNav = i > 0 ? `<a href="${linkGoogle}" target="_blank" title="Navegar" style="text-decoration:none;font-size:18px;margin-right:10px;">🚗</a>` : '';
-        
-        // Le agregamos el NÚMERO DE ORDEN (i) para ver que funciona
-        li.innerHTML = `
-            <div style="display:flex; align-items:center;">
-                <span style="margin-right:8px; font-weight:bold; color:#004AAD;">${i}.</span>
-                <span>${c.nombre}</span>
-            </div>
-            <div style="display:flex; align-items:center;">
-                ${btnNav}
-                ${i>0 ? `<button class="btn-borrar" onclick="eliminarDeRuta(${i})">X</button>` : ''}
-            </div>
-        `;
+        var btnNav = i > 0 ? `<a href="${linkGoogle}" target="_blank" style="text-decoration:none;font-size:18px;margin-right:10px;">🚗</a>` : '';
+        li.innerHTML = `<div><strong style="color:#004AAD;margin-right:5px;">${i}.</strong> ${c.nombre}</div>
+                        <div style="display:flex;align-items:center;">${btnNav} ${i>0 ? `<button class="btn-borrar" onclick="eliminarDeRuta(${i})">X</button>` : ''}</div>`;
         ul.appendChild(li);
     });
-
     dibujarRutaGPS();
 }
 
 // ======================================================
-// 🚛 DIBUJAR RUTA (Ya recibe la lista ordenada)
+// 🚛 RUTA Y GPS
 // ======================================================
 function dibujarRutaGPS() {
-    if (clientes.length < 2) {
-        limpiarCapasRuta();
-        document.getElementById("textoDistancia").innerText = "0.00 km";
-        return;
-    }
-
-    limpiarCapasRuta();
+    if (clientes.length < 2) { limpiarCapas(); document.getElementById("textoDistancia").innerText = "0.00 km"; return; }
+    limpiarCapas();
     document.getElementById("textoDistancia").innerText = "Calculando...";
-
-    // Cerramos el circuito (Volver al depósito)
-    var puntosGPS = clientes.map(c => L.latLng(c.coords[0], c.coords[1]));
-    puntosGPS.push(L.latLng(clientes[0].coords[0], clientes[0].coords[1]));
+    
+    var puntos = clientes.map(c => L.latLng(c.coords));
+    puntos.push(L.latLng(clientes[0].coords)); // Vuelta
 
     routingControl = L.Routing.control({
-        waypoints: puntosGPS,
-        routeWhileDragging: false, show: false, createMarker: function(){ return null; },
+        waypoints: puntos, routeWhileDragging: false, show: false, createMarker: function(){ return null; },
         lineOptions: { styles: [{color: '#004AAD', opacity: 0.8, weight: 6}] }
     }).addTo(map);
 
     routingControl.on('routesfound', function(e) {
-        var kms = (e.routes[0].summary.totalDistance / 1000).toFixed(2);
-        document.getElementById("textoDistancia").innerText = kms + " km 🛣️";
+        document.getElementById("textoDistancia").innerText = (e.routes[0].summary.totalDistance / 1000).toFixed(2) + " km 🛣️";
     });
-
     routingControl.on('routingerror', function() {
-        console.warn("Fallo GPS, usando línea recta");
-        limpiarCapasRuta();
-        var lineaPts = puntosGPS;
-        lineaRecta = L.polyline(lineaPts, {color:'red', dashArray:'10,10'}).addTo(map);
-        
-        var dTotal = 0; // Calculo manual rápido
-        for(let i=0; i<puntosGPS.length-1; i++) dTotal += map.distance(puntosGPS[i], puntosGPS[i+1]);
-        document.getElementById("textoDistancia").innerText = (dTotal/1000).toFixed(2) + " km 📏";
+        limpiarCapas();
+        var pts = puntos;
+        lineaRecta = L.polyline(pts, {color:'red', dashArray:'10,10'}).addTo(map);
+        var t=0; for(let i=0; i<pts.length-1; i++) t+=map.distance(pts[i], pts[i+1]);
+        document.getElementById("textoDistancia").innerText = (t/1000).toFixed(2) + " km 📏";
     });
 }
 
-function limpiarCapasRuta() {
+function limpiarCapas() {
     if(routingControl) { try{map.removeControl(routingControl)}catch(e){} routingControl=null; }
     if(lineaRecta) { map.removeLayer(lineaRecta); lineaRecta=null; }
 }
 
-// ======================================================
-// EVENTOS Y EXTRAS
-// ======================================================
 map.on('click', function(e) {
     var input = document.getElementById("nombreCliente");
     var nombre = input.value;
-    if (!nombre) { alert("⚠️ Escribí nombre primero."); input.focus(); return; }
-
+    if (!nombre) { alert("⚠️ Escribí nombre arriba."); input.focus(); return; }
     var nuevo = { nombre: nombre, coords: [e.latlng.lat, e.latlng.lng] };
-    agenda.push(nuevo);
-    clientes.push(nuevo); // Lo agregamos al final, pero...
-    
-    input.value = ""; 
-    actualizarMapaYLista(); // ...¡Aquí se reordena solo!
+    agenda.push(nuevo); clientes.push(nuevo);
+    input.value = ""; actualizarMapaYLista();
 });
 
 window.eliminarDeRuta = function(i) {
     if (i===0) return alert("Depósito fijo.");
-    clientes.splice(i, 1);
-    actualizarMapaYLista();
+    clientes.splice(i, 1); actualizarMapaYLista();
 }
 
 window.borrarMemoria = function() {
@@ -237,20 +214,19 @@ window.activarGPS = function() {
     var estado = document.getElementById("estadoGPS");
     if (watchID) {
         navigator.geolocation.clearWatch(watchID); watchID = null;
-        btn.className = "btn-gps-inactivo"; btn.innerText = "▶ ACTIVAR SEGUIMIENTO"; estado.innerText = "GPS Apagado";
-        if (miMarcador) map.removeLayer(miMarcador);
-        return;
+        btn.innerText = "🛰️ Prender/Apagar GPS"; estado.innerText = "Inactivo";
+        if (miMarcador) map.removeLayer(miMarcador); return;
     }
     if (!navigator.geolocation) return alert("No GPS");
-    btn.className = "btn-gps-activo"; btn.innerText = "⏹ DETENER"; estado.innerText = "Buscando...";
-    var iconoYo = L.divIcon({ className: 'mi-icono-gps', html: '<div style="background-color:#2196F3;width:15px;height:15px;border-radius:50%;border:3px solid white;"></div>', iconSize: [20, 20] });
+    btn.innerText = "⏹ DETENER"; estado.innerText = "Buscando...";
+    var iconoYo = L.divIcon({ className: 'mi-icono-gps', html: '<div style="background-color:#2196F3;width:15px;height:15px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px blue;"></div>', iconSize: [20, 20] });
+    
     watchID = navigator.geolocation.watchPosition(function(pos) {
         var lat = pos.coords.latitude, lng = pos.coords.longitude;
         estado.innerText = "📍 Activo (" + Math.round(pos.coords.accuracy) + "m)";
         if (miMarcador) miMarcador.setLatLng([lat, lng]); else miMarcador = L.marker([lat, lng], {icon: iconoYo}).addTo(map);
-        // map.setView([lat, lng], 16); // Comentado para no molestar si mirás otra parte
-    }, function(err) { estado.innerText = "Error GPS"; btn.className = "btn-gps-inactivo"; }, { enableHighAccuracy: true });
+        // map.setView([lat, lng], 17); // Descomentar si querés que te siga agresivamente
+    }, function(err) { estado.innerText = "Error GPS"; }, { enableHighAccuracy: true });
 }
 
-// INICIO
 actualizarMapaYLista();

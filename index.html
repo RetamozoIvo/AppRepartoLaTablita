@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reparto GPS - La Tablita</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
@@ -11,35 +11,36 @@
 </head>
 <body>
 
-    <h1>Ruta de Reparto - En Vivo</h1>
+    <h1 id="tituloApp">Ruta de Reparto - En Vivo</h1>
+
+    <button id="btnSalirNav" onclick="toggleModoViaje()">
+        ❌ DETENER RECORRIDO
+    </button>
 
     <div class="contenedor-app">
         
         <div class="sidebar">
             
-            <div class="seccion-gps">
-                <h3>🛰️ Modo Conductor</h3>
-                <button onclick="activarGPS()" id="btnGPS" class="btn-gps-inactivo">
-                    ▶ ACTIVAR SEGUIMIENTO
+            <div style="background:#e8f5e9; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #4CAF50;">
+                <h3 style="border:none; color:#2e7d32; margin-top:0;">🚀 ¿Listo para salir?</h3>
+                <button onclick="toggleModoViaje()" class="btn-empezar">
+                    ▶ EMPEZAR RECORRIDO
                 </button>
-                <p class="estado-gps" id="estadoGPS">GPS Apagado</p>
+                <p style="font-size:12px; color:#555; margin:5px 0 0 0;">Pantalla completa + GPS Automático</p>
             </div>
 
             <hr>
 
-            <h3>📍 Cargar Nuevo Cliente</h3>
+            <h3>📍 Cargar Nuevo</h3>
             <div class="form-group">
                 <input type="text" id="nombreCliente" placeholder="Nombre (Ej: Kiosco Nuevo)">
-                <p class="instruccion">👆 1. Escribí el nombre.<br>👇 2. Tocá en el mapa para guardar.</p>
+                <p class="instruccion">👆 Escribí y tocá el mapa.</p>
             </div>
 
-            <hr>
-
             <h3>👤 Buscar en Agenda</h3>
-            <p id="contadorAgenda" style="font-size:12px; color:#666; margin-bottom:5px;">Cargando agenda...</p>
-            
+            <p id="contadorAgenda" style="font-size:11px; color:#666; margin:0;">Cargando...</p>
             <div class="buscador-container">
-                <input type="text" id="inputBuscador" placeholder="🔍 Toca aquí para ver lista..." onkeyup="buscarPersona()" onfocus="buscarPersona()">
+                <input type="text" id="inputBuscador" placeholder="🔍 Toca para buscar..." onkeyup="buscarPersona()" onfocus="buscarPersona()">
                 <ul id="listaResultados"></ul>
             </div>
 
@@ -48,9 +49,12 @@
             <h3>🚚 Hoja de Ruta</h3>
             <ul id="listaClientesHTML"></ul>
 
-            <button onclick="borrarMemoria()" class="btn-rojo">
-                🗑️ BORRAR RUTA DE HOY
-            </button>
+            <button onclick="borrarMemoria()" class="btn-rojo">🗑️ BORRAR RUTA</button>
+
+            <div style="margin-top:20px;">
+                <button onclick="activarGPS()" id="btnGPS" class="btn-gps-chico">🛰️ Prender/Apagar GPS</button>
+                <p class="estado-gps" id="estadoGPS">GPS Inactivo</p>
+            </div>
 
             <div class="panel-info">
                 <p>Distancia Total:</p>
